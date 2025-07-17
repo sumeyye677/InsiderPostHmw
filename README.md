@@ -1,6 +1,6 @@
 # Modern Blog Sayfası – JSONPlaceholder ile Dinamik İçerik
 
-Web Live Link: 
+## Web Live Link: https://mypostloading.netlify.app/
 
 Bu proje, web programlamaya giriş seviyesinde olanlar için hazırlanmış bir blog arayüzü örneğidir. Sahte veri sağlayan bir API olan [JSONPlaceholder](https://jsonplaceholder.typicode.com/) üzerinden içerik çekilerek, modern tasarımlı, dinamik ve kullanıcı etkileşimli bir web sayfası oluşturulmuştur.
 
