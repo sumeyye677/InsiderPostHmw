@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Blog Platformu</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #aaaaaa 0%, #717171 100%);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ef5bc8;
+        }
+
+        .search-container {
+            position: relative;
+            flex-grow: 1;
+            max-width: 400px;
+            margin: 0 20px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: transparent;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: #b1bdf4;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 20px 20px;
+        }
+
+        .stats-bar {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .post-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .post-header {
+            background: linear-gradient(45deg, #b7bfe0, #f54dd3);
+            color: white;
+            padding: 20px;
+            position: relative;
+        }
+
+        .post-id {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .post-title {
+            font-size: 1.3rem;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+
+        .post-meta {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .post-content {
+            padding: 20px;
+        }
+
+        .post-body {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .action-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .action-btn.liked {
+            color: #e74c3c;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+            text-align: center;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            display: none;
+        }
+
+        .load-more-btn {
+            display: block;
+            margin: 30px auto;
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .load-more-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .post-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-top:hover {
+            background: #95a0d5;
+            transform: scale(1.1);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .search-container {
+                max-width: 100%;
+                margin: 0;
+            }
+            
+            .posts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">My Blog Page</div>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Blog yazılarında ara...">
+                <button class="search-btn" onclick="aramayiTemizle()">🔍</button>
+            </div>
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">Tümü</button>
+                <button class="filter-btn" data-filter="recent">Son Yazılar</button>
+                <button class="filter-btn" data-filter="popular">Popüler</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number" id="totalPosts">0</div>
+                <div class="stat-label">Toplam Yazı</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalLikes">0</div>
+                <div class="stat-label">Beğeni</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalComments">0</div>
+                <div class="stat-label">Yorum</div>
+            </div>
+        </div>
+
+        <div class="posts-grid" id="postsGrid">
+            <!-- Postlar buraya gelecek -->
+        </div>
+
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner"></div>
+            <p>Yükleniyor...</p>
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            <strong>Hata!</strong> Postlar yüklenemedi. Lütfen daha sonra tekrar deneyin.
+        </div>
+
+        <div class="no-results" id="noResults">
+            <h3>Sonuç bulunamadı</h3>
+            <p>Arama kriterlerinize uygun yazı bulunamadı.</p>
+        </div>
+
+        <button class="load-more-btn" id="loadMoreBtn" onclick="daha_fazla_yukle()">
+            Daha Fazla Yükle
+        </button>
+    </div>
+
+    <div class="post-modal" id="postModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="modalKapat()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <button class="back-to-top" id="backToTop" onclick="yukariCik()">↑</button>
+
+    <script>
+        // Global değişkenler
+        let currentPage = 0;
+        let postsPerPage = 6;
+        let isLoading = false;
+        let allPosts = [];
+        let filteredPosts = [];
+        let totalStats = { posts: 0, likes: 0, comments: 0 };
+
+        // Sayfa yüklendiğinde
+        $(document).ready(function() {
+            ilkYukleme();
+            eventListenerlariAyarla();
+        });
+
+        function ilkYukleme() {
+            postlariYukle();
+        }
+
+        function eventListenerlariAyarla() {
+            // Arama input'u
+            $('#searchInput').on('input', function() {
+                const searchTerm = $(this).val().toLowerCase();
+                aramaYap(searchTerm);
+            });
+
+            // Filtre butonları
+            $('.filter-btn').click(function() {
+                $('.filter-btn').removeClass('active');
+                $(this).addClass('active');
+                
+                const filterType = $(this).data('filter');
+                filtreUygula(filterType);
+            });
+
+            // Scroll event
+            $(window).scroll(function() {
+                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 200) {
+                    if (!isLoading && filteredPosts.length > 0) {
+                        otomatikYukle();
+                    }
+                }
+
+                // Back to top button
+                if ($(window).scrollTop() > 300) {
+                    $('#backToTop').show();
+                } else {
+                    $('#backToTop').hide();
+                }
+            });
+
+            // Modal dışına tıklanınca kapat
+            $('#postModal').click(function(e) {
+                if (e.target === this) {
+                    modalKapat();
+                }
+            });
+        }
+
+        function postlariYukle() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            $('#loadingSpinner').show();
+            $('#errorMessage').hide();
+
+            const startIndex = currentPage * postsPerPage;
+            const url = `https://jsonplaceholder.typicode.com/posts?_start=${startIndex}&_limit=${postsPerPage}`;
+
+            $.get(url)
+                .done(function(posts) {
+                    if (posts.length > 0) {
+                        posts.forEach(post => {
+                            // Her posta rastgele istatistikler ekle
+                            post.likes = Math.floor(Math.random() * 100) + 1;
+                            post.comments = Math.floor(Math.random() * 50) + 1;
+                            post.liked = false;
+                            post.date = new Date(Date.now() - Math.random() * 10000000000).toLocaleDateString('tr-TR');
+                            allPosts.push(post);
+                        });
+                        
+                        filteredPosts = [...allPosts];
+                        postlariGoster(posts);
+                        currentPage++;
+                        istatistikleriGuncelle();
+                    } else {
+                        $('#loadMoreBtn').hide();
+                    }
+                })
+                .fail(function() {
+                    $('#errorMessage').show();
+                })
+                .always(function() {
+                    isLoading = false;
+                    $('#loadingSpinner').hide();
+                });
+        }
+
+        function postlariGoster(posts) {
+            posts.forEach(post => {
+                const postCard = postKartiOlustur(post);
+                $('#postsGrid').append(postCard);
+            });
+        }
+
+        function postKartiOlustur(post) {
+            const cardHtml = `
+                <div class="post-card fade-in" data-post-id="${post.id}">
+                    <div class="post-header">
+                        <div class="post-id">#${post.id}</div>
+                        <div class="post-title">${post.title}</div>
+                        <div class="post-meta">📅 ${post.date}</div>
+                    </div>
+                    <div class="post-content">
+                        <div class="post-body">${post.body.substring(0, 120)}...</div>
+                        <div class="post-actions">
+                            <button class="action-btn like-btn ${post.liked ? 'liked' : ''}" 
+                                    onclick="begeniToggle(${post.id})">
+                                ${post.liked ? '❤️' : '🤍'} ${post.likes}
+                            </button>
+                            <button class="action-btn" onclick="postDetayGoster(${post.id})">
+                                💬 ${post.comments}
+                            </button>
+                            <button class="action-btn" onclick="postDetayGoster(${post.id})">
+                                👁️ Detay
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return cardHtml;
+        }
+
+        function begeniToggle(postId) {
+            const post = allPosts.find(p => p.id === postId);
+            if (post) {
+                post.liked = !post.liked;
+                post.likes += post.liked ? 1 : -1;
+                
+                // UI güncelle
+                const card = $(`.post-card[data-post-id="${postId}"]`);
+                const likeBtn = card.find('.like-btn');
+                likeBtn.toggleClass('liked', post.liked);
+                likeBtn.html(`${post.liked ? '❤️' : '🤍'} ${post.likes}`);
+                
+                istatistikleriGuncelle();
+            }
+        }
+
+        function postDetayGoster(postId) {
+            const post = allPosts.find(p => p.id === postId);
+            if (post) {
+                const modalContent = `
+                    <div class="post-header">
+                        <div class="post-id">#${post.id}</div>
+                        <h2>${post.title}</h2>
+                        <div class="post-meta">📅 ${post.date}</div>
+                    </div>
+                    <div class="post-content">
+                        <p>${post.body}</p>
+                        <div class="post-actions">
+                            <button class="action-btn like-btn ${post.liked ? 'liked' : ''}" 
+                                    onclick="begeniToggle(${post.id})">
+                                ${post.liked ? '❤️' : '🤍'} ${post.likes}
+                            </button>
+                            <button class="action-btn">💬 ${post.comments}</button>
+                            <button class="action-btn">📤 Paylaş</button>
+                        </div>
+                    </div>
+                `;
+                $('#modalContent').html(modalContent);
+                $('#postModal').show();
+            }
+        }
+
+        function modalKapat() {
+            $('#postModal').hide();
+        }
+
+        function aramaYap(searchTerm) {
+            if (searchTerm === '') {
+                filteredPosts = [...allPosts];
+            } else {
+                filteredPosts = allPosts.filter(post => 
+                    post.title.toLowerCase().includes(searchTerm) ||
+                    post.body.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            postlariYenidenGoster();
+        }
+
+        function filtreUygula(filterType) {
+            switch(filterType) {
+                case 'recent':
+                    filteredPosts = [...allPosts].sort((a, b) => new Date(b.date) - new Date(a.date));
+                    break;
+                case 'popular':
+                    filteredPosts = [...allPosts].sort((a, b) => b.likes - a.likes);
+                    break;
+                default:
+                    filteredPosts = [...allPosts];
+            }
+            
+            postlariYenidenGoster();
+        }
+
+        function postlariYenidenGoster() {
+            $('#postsGrid').empty();
+            $('#noResults').hide();
+            
+            if (filteredPosts.length === 0) {
+                $('#noResults').show();
+                return;
+            }
+            
+            const displayPosts = filteredPosts.slice(0, (currentPage + 1) * postsPerPage);
+            displayPosts.forEach(post => {
+                const postCard = postKartiOlustur(post);
+                $('#postsGrid').append(postCard);
+            });
+        }
+
+        function istatistikleriGuncelle() {
+            const totalPosts = allPosts.length;
+            const totalLikes = allPosts.reduce((sum, post) => sum + post.likes, 0);
+            const totalComments = allPosts.reduce((sum, post) => sum + post.comments, 0);
+            
+            $('#totalPosts').text(totalPosts);
+            $('#totalLikes').text(totalLikes);
+            $('#totalComments').text(totalComments);
+        }
+
+        function daha_fazla_yukle() {
+            postlariYukle();
+        }
+
+        function otomatikYukle() {
+            if (filteredPosts.length < allPosts.length) {
+                postlariYukle();
+            }
+        }
+
+        function aramayiTemizle() {
+            $('#searchInput').val('');
+            filteredPosts = [...allPosts];
+            postlariYenidenGoster();
+        }
+
+        function yukariCik() {
+            $('html, body').animate({scrollTop: 0}, 600);
+        }
+
+        // Keyboard shortcuts
+        $(document).keydown(function(e) {
+            if (e.key === 'Escape') {
+                modalKapat();
+            }
+        });
+    </script>
+</body>
+</html>
