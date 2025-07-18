@@ -73,7 +73,7 @@ Bu ödevin ana gereksinimlerinin dışında aşağıdaki isteğe bağlı (opsiyo
 - **Modal Pencere**: Post’un üzerine tıklanarak detaylı hali pop-up şeklinde gösterilir.
 - **Mobil Duyarlılık**: Sayfa farklı ekran boyutlarına uygun olacak şekilde responsive tasarlandı.
 
-## Ekran Görüntüsü (Opsiyonel)
+## Ekran Görüntüsü 
 
 <img width="1553" height="897" alt="aaaaaa" src="https://github.com/user-attachments/assets/b742964b-e400-439d-b4d9-ac5c92334824" />
 
